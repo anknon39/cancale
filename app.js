@@ -18,9 +18,9 @@ const currentDayIndex = days_short.indexOf(currentDayName); // days_shortのイ�
 let changeAnalysis = {};
 
 let state = JSON.parse(localStorage.getItem("komapass-state")) || {
-  lessons: [], 
+  lessons: [],
   periods: structuredClone(defaultPeriods),
-  tasks: [] 
+  tasks: []
 };
 
 const save = () => localStorage.setItem("komapass-state", JSON.stringify(state));
@@ -37,9 +37,9 @@ function switchView(viewId) {
   document.querySelectorAll(".nav-item").forEach(n => {
     n.classList.toggle("active", n.getAttribute("data-view") === viewId);
   });
-  
+
   const titles = { home: "ホーム", timetable: "時間割", changes: "変更追加", tasks: "課題", tests: "テスト", settings: "設定" };
-  document.getElementById("viewTitle").textContent = titles[viewId] || "コマパス";
+  document.getElementById("viewTitle").textContent = titles[viewId] || "キャンカレ";
 }
 
 window.switchView = switchView;
@@ -58,7 +58,7 @@ document.querySelectorAll(".nav-item").forEach(n => {
 function renderTimetable() {
   const grid = document.querySelector("#timetableGrid");
   if (!grid) return;
-  
+
   let html = `<div class="tt-cell header"></div>` + days_short.map((d, i) => {
     const dateStr = getDateForDay(i);
     return `<div class="tt-cell header" data-day="${days_short[i]}" ondrop="dropLesson(event)" ondragover="allowDrop(event)">${days_short[i]}<br><small>${dateStr}</small></div>`;
@@ -180,7 +180,7 @@ function renderTasks() {
   `).join("");
 
   container.innerHTML = html || "<p>課題無し</p>";
-  if(homeContainer) homeContainer.innerHTML = html || "<p>なし</p>";
+  if (homeContainer) homeContainer.innerHTML = html || "<p>なし</p>";
 }
 
 // 今日の授業の描画
@@ -487,7 +487,7 @@ function transferLessonToDay() {
   save();
   renderTimetable();
   renderTransferForm();
-  alert("授業を振替しました。曜日だけで振替されました。" );
+  alert("授業を振替しました。曜日だけで振替されました。");
 }
 
 function editLesson(id) {
@@ -604,7 +604,7 @@ if (applyBtn) {
     }
     const day = getDayFromDate(changeAnalysis.month, changeAnalysis.date);
     const periodId = Number(changeAnalysis.period);
-    
+
     if (changeAnalysis.type === "schedule") {
       changeAnalysis.lessons.forEach(lesson => {
         state.lessons.push({
@@ -642,7 +642,7 @@ if (applyBtn) {
       // 追加
       state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: "", status: "通常" });
     }
-    
+
     alert("スケジュールに反映しました。");
     renderTimetable();
     renderTodayLessons();
