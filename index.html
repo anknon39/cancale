@@ -1,20 +1,25 @@
 <!--[cite: 2] をベースに、課題部分を整理 -->
 <!doctype html>
 <html lang="ja">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>コマパス</title>
+  <title>キャンカレ</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
+
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
         <span class="brand-mark">Can</span>
-       
-          <div><strong>キャンカレ</strong><p><span>授業管理</span></div></p>
-        
+
+        <div><strong>キャンカレ</strong>
+          <p><span>授業管理</span>
+        </div>
+        </p>
+
       </div>
       <nav class="nav-list">
         <button class="nav-item active" data-view="home" type="button">ホーム</button>
@@ -38,11 +43,15 @@
       <section class="view active" id="home">
         <div class="dashboard">
           <section class="panel today-panel">
-            <div class="panel-heading"><h2>今日の授業</h2></div>
+            <div class="panel-heading">
+              <h2>今日の授業</h2>
+            </div>
             <div class="lesson-list" id="todayLessons"></div>
           </section>
           <section class="panel">
-            <div class="panel-heading"><h2>締切が近い課題</h2></div>
+            <div class="panel-heading">
+              <h2>締切が近い課題</h2>
+            </div>
             <div id="homeTasks"></div>
           </section>
         </div>
@@ -60,7 +69,9 @@
       <section class="view" id="changes">
         <div class="change-layout">
           <section class="panel">
-            <div class="panel-heading"><h2>変更・授業追加</h2></div>
+            <div class="panel-heading">
+              <h2>変更・授業追加</h2>
+            </div>
             <textarea id="changeText" rows="9" placeholder="例文:
 振替: 5月10日 2限 英語A 振替 金曜日
 休講: 5月10日 2限 英語A 休講">例文:　追加　5月10日 2限 英語A 休講</textarea>
@@ -103,18 +114,24 @@
       <!-- 課題（ここを1つに統合） -->
       <section class="view" id="tasks">
         <button id="addTaskButton" class="primary-action" style="width:100%; margin-bottom:20px;">＋ 課題を追加</button>
-        <div id="taskList"><p class="empty-message">課題無し</p></div>
+        <div id="taskList">
+          <p class="empty-message">課題無し</p>
+        </div>
       </section>
 
       <!-- テスト -->
       <section class="view" id="tests">
         <button id="addTestButton" class="primary-action" style="width:100%; margin-bottom:20px;">＋ テストを追加</button>
-        <div id="testList"><p class="empty-message">テスト無し</p></div>
+        <div id="testList">
+          <p class="empty-message">テスト無し</p>
+        </div>
       </section>
 
       <!-- 設定[cite: 2] -->
       <section class="view" id="settings">
-        <section class="panel"><div id="periodSettings"></div></section>
+        <section class="panel">
+          <div id="periodSettings"></div>
+        </section>
       </section>
     </main>
   </div>
@@ -157,12 +174,14 @@
     <form id="editTaskForm" method="dialog">
       <h3>課題の編集</h3>
       <input type="hidden" name="editTaskId" id="editTaskId">
-      <input type="text" name="editTaskName" id="editTaskName" placeholder="内容" required style="width:100%; margin-bottom:10px;">
+      <input type="text" name="editTaskName" id="editTaskName" placeholder="内容" required
+        style="width:100%; margin-bottom:10px;">
       <div style="display:flex; gap:10px;">
         <input type="date" name="editTaskDate" id="editTaskDate" required style="flex:1;">
         <input type="text" name="editTaskRoom" id="editTaskRoom" placeholder="教室" style="flex:1;">
       </div>
-      <input type="text" name="editTaskSubmission" id="editTaskSubmission" placeholder="提出方法" style="width:100%; margin:10px 0;">
+      <input type="text" name="editTaskSubmission" id="editTaskSubmission" placeholder="提出方法"
+        style="width:100%; margin:10px 0;">
       <div class="button-row">
         <button type="button" class="secondary-action" id="cancelEditTaskButton">キャンセル</button>
         <button type="submit" class="primary-action">保存</button>
@@ -175,7 +194,8 @@
     <form id="editTestForm" method="dialog">
       <h3>テストの編集</h3>
       <input type="hidden" name="editTestId" id="editTestId">
-      <input type="text" name="editTestName" id="editTestName" placeholder="内容" required style="width:100%; margin-bottom:10px;">
+      <input type="text" name="editTestName" id="editTestName" placeholder="内容" required
+        style="width:100%; margin-bottom:10px;">
       <div style="display:flex; gap:10px;">
         <input type="date" name="editTestDate" id="editTestDate" required style="flex:1;">
         <input type="text" name="editTestRoom" id="editTestRoom" placeholder="教室" style="flex:1;">
@@ -224,7 +244,8 @@
     <form id="editLessonForm">
       <h3>授業の編集</h3>
       <input type="hidden" name="editLessonId" id="editLessonId">
-      <input type="text" name="editLessonName" id="editLessonName" placeholder="授業名" required style="width:100%; margin-bottom:10px;">
+      <input type="text" name="editLessonName" id="editLessonName" placeholder="授業名" required
+        style="width:100%; margin-bottom:10px;">
       <div style="display:flex; gap:10px; margin-bottom:10px;">
         <select name="editLessonDay" id="editLessonDay" required style="flex:1;">
           <option value="">曜日を選択</option>
@@ -244,7 +265,8 @@
           <option value="6">6限</option>
         </select>
       </div>
-      <input type="text" name="editLessonRoom" id="editLessonRoom" placeholder="教室" style="width:100%; margin-bottom:10px;">
+      <input type="text" name="editLessonRoom" id="editLessonRoom" placeholder="教室"
+        style="width:100%; margin-bottom:10px;">
       <div class="button-row">
         <button type="button" class="secondary-action" id="cancelEditLessonButton">キャンセル</button>
         <button type="submit" class="primary-action">保存</button>
@@ -254,4 +276,5 @@
 
   <script src="./app.js"></script>
 </body>
+
 </html>
