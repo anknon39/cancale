@@ -195,10 +195,12 @@ h1 {
 }
 
 .timetable {
-  width: 100%;
-  min-width: 0;
-  grid-template-columns: 42px repeat(5, minmax(0, 1fr));
-  overflow: visible;
+  display: grid;
+  grid-template-columns: 96px repeat(5, minmax(150px, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  overflow: auto;
 }
 
 .tt-cell {
@@ -263,6 +265,7 @@ h1 {
 
 /* Mobile optimized layout */
 @media (max-width: 760px) {
+
   html,
   body {
     min-width: 0;
