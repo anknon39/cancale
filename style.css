@@ -474,7 +474,8 @@ h1 {
 
   .lesson-card {
     min-width: 0;
-    padding: 5px;
+    min-height: 72px;
+    padding: 7px 6px;
     border: 0;
     border-left: 3px solid var(--accent);
     border-radius: 8px;
@@ -482,20 +483,40 @@ h1 {
     overflow: hidden;
   }
 
-  .lesson-card strong,
+  .lesson-info {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
   .lesson-card div {
     min-width: 0;
+  }
+
+  .lesson-name {
+    display: -webkit-box;
+    min-width: 0;
     overflow: hidden;
+    color: #182126;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .lesson-room {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    color: #647887;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .lesson-card strong {
-    font-size: 10px;
-  }
-
-  .lesson-card div {
-    font-size: 9px !important;
   }
 
   .lesson-card button {
