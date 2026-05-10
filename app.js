@@ -47,9 +47,17 @@ window.switchView = switchView;
 document.querySelectorAll(".nav-item").forEach(n => {
   console.log("Setting up listener for:", n.getAttribute("data-view"));
   n.addEventListener("click", (e) => {
+    e.preventDefault();
     console.log("Clicked:", n.getAttribute("data-view"));
     switchView(n.getAttribute("data-view"));
   });
+});
+
+document.addEventListener("click", (e) => {
+  const navItem = e.target.closest(".nav-item");
+  if (!navItem) return;
+  e.preventDefault();
+  switchView(navItem.getAttribute("data-view"));
 });
 
 // --- 3. 描画ロジック ---
@@ -609,18 +617,33 @@ if (analyzeBtn) {
 }
 
 // 例文ボタンのイベント登録
-document.getElementById("exampleTransfer").onclick = () => {
-  document.getElementById("changeText").value = "月曜2限を金曜に振替";
-};
-document.getElementById("exampleSchedule").onclick = () => {
-  document.getElementById("changeText").value = "月曜2限 英語A 追加";
-};
-document.getElementById("exampleCancel").onclick = () => {
-  document.getElementById("changeText").value = "月曜2限 英語A 教室変更 302教室";
-};
-document.getElementById("exampleDelete").onclick = () => {
-  document.getElementById("changeText").value = "月曜2限 削除";
-};
+const exampleTransferButton = document.getElementById("exampleTransfer");
+if (exampleTransferButton) {
+  exampleTransferButton.onclick = () => {
+    document.getElementById("changeText").value = "月曜2限を金曜に振替";
+  };
+}
+
+const exampleScheduleButton = document.getElementById("exampleSchedule");
+if (exampleScheduleButton) {
+  exampleScheduleButton.onclick = () => {
+    document.getElementById("changeText").value = "月曜2限 英語A 追加";
+  };
+}
+
+const exampleCancelButton = document.getElementById("exampleCancel");
+if (exampleCancelButton) {
+  exampleCancelButton.onclick = () => {
+    document.getElementById("changeText").value = "月曜2限 英語A 教室変更 302教室";
+  };
+}
+
+const exampleDeleteButton = document.getElementById("exampleDelete");
+if (exampleDeleteButton) {
+  exampleDeleteButton.onclick = () => {
+    document.getElementById("changeText").value = "月曜2限 削除";
+  };
+}
 
 // 反映ボタンの処理（ルール：予定が被っている時は確認する）
 const applyBtn = document.getElementById("applyChangeButton");
