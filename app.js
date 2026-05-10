@@ -153,14 +153,15 @@ function parseChangeText(rawText) {
   // 既存の単一行解析ロジック
   const periodMatch = rawText.match(/(\d+)限/);
   const status = rawText.includes("休講") ? "休講" : (rawText.includes("補講") ? "補講" : (rawText.includes("振替") ? "振替" : (rawText.includes("変更") ? "変更" : "通常")));
-  const roomMatch = rawText.match(/([A-Za-z]*-?\d{2,4}|PC-\d+|研究室\d+)\s*教室?/);
+  const roomPattern = /(PC-\d+|研究室\d+|[A-Za-z]*\d{1,4}(?:-\d{1,4}){0,3})\s*教室?/;
+  const roomMatch = rawText.match(roomPattern);
   let subject = "授業";
   if (periodMatch) {
     const afterPeriod = rawText.slice(rawText.indexOf(periodMatch[0]) + periodMatch[0].length);
     subject = afterPeriod
       .replace(/を.*$/, "")
       .replace(/(休講|補講|振替|変更|教室変更|追加|登録).*/, "")
-      .replace(/([A-Za-z]*-?\d{2,4}|PC-\d+|研究室\d+)\s*教室?.*/, "")
+      .replace(roomPattern, "")
       .trim() || "授業";
   }
 
