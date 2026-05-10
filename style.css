@@ -40,4 +40,43 @@ h1 { font-size: 32px; font-weight: 800; margin: 0; }
 .dialog-form input, .dialog-form select { min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; }
 .button-row { display: flex; gap: 12px; margin-top: 16px; }
 .period-row { display: grid; grid-template-columns: 60px 1fr 1fr; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-.empty-message { text-align: center; color: var(--muted); font-style: italic; padding: 40px 0; }
+.empty-message { text-align: center; color: var(--muted); font-style: italic; padding: 40px 0; }/* Smartphone: keep the desktop layout and allow horizontal scrolling. */
+html,
+body {
+  min-width: 1180px;
+  overflow-x: auto;
+}
+
+.app-shell {
+  min-width: 1180px;
+}
+
+.sidebar {
+  flex: 0 0 240px;
+}
+
+.main {
+  min-width: 940px;
+}
+
+.timetable {
+  min-width: 920px;
+}
+
+.topbar,
+.button-row,
+.panel-heading {
+  flex-wrap: nowrap;
+}
+
+button,
+.nav-item,
+.primary-action,
+.secondary-action,
+h1,
+h2,
+.card-title,
+.card-meta,
+.badge {
+  white-space: nowrap;
+}
