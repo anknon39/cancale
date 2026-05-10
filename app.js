@@ -129,10 +129,17 @@ function parseChangeText(rawText) {
   const dayNameMatch = firstLine.match(/(?:[（(【\[]\s*(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日|月|火|水|木|金|土)\s*[）)\]】])|(?:\d+月\d+日\s*(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日|月|火|水|木|金|土))/);
   const month = dateMatch ? dateMatch[1] : null;
   const date = dateMatch ? dateMatch[2] : null;
+  const textWithoutDates = rawText.replace(/\d+月\d+日/g, " ");
+  const weekdayHints = [...textWithoutDates.matchAll(/(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日曜|月曜|火曜|水曜|木曜|金曜|土曜|日|月|火|水|木|金|土)/g)]
+    .map(match => normalizeDayName(match[1]))
+    .filter(Boolean);
   const rawDayName = dayNameMatch ? (dayNameMatch[1] || dayNameMatch[2]) : null;
   let day = rawDayName ? normalizeDayName(rawDayName) : null;
   if (!day && month && date) {
     day = normalizeDayName(getDayFromDate(month, date));
+  }
+  if (!day && weekdayHints.length > 0) {
+    day = weekdayHints[0];
   }
 
   const lessonLines = lines.slice(1).filter(l => l.match(/\d{1,2}:\d{2}/) && l.match(/\d+限/));
@@ -145,8 +152,17 @@ function parseChangeText(rawText) {
 
   // 既存の単一行解析ロジック
   const periodMatch = rawText.match(/(\d+)限/);
-  const subjectMatch = rawText.match(/(\d+)限\s+(.+?)\s+(休講|補講|振替)/);
-  const status = rawText.includes("休講") ? "休講" : (rawText.includes("補講") ? "補講" : (rawText.includes("振替") ? "振替" : "通常"));
+  const status = rawText.includes("休講") ? "休講" : (rawText.includes("補講") ? "補講" : (rawText.includes("振替") ? "振替" : (rawText.includes("変更") ? "変更" : "通常")));
+  const roomMatch = rawText.match(/([A-Za-z]*-?\d{2,4}|PC-\d+|研究室\d+)\s*教室?/);
+  let subject = "授業";
+  if (periodMatch) {
+    const afterPeriod = rawText.slice(rawText.indexOf(periodMatch[0]) + periodMatch[0].length);
+    subject = afterPeriod
+      .replace(/を.*$/, "")
+      .replace(/(休講|補講|振替|変更|教室変更|追加|登録).*/, "")
+      .replace(/([A-Za-z]*-?\d{2,4}|PC-\d+|研究室\d+)\s*教室?.*/, "")
+      .trim() || "授業";
+  }
 
   let transferTo = null;
   if (status === "振替") {
@@ -158,9 +174,12 @@ function parseChangeText(rawText) {
         transferTo = days_short[days.indexOf(transferTo)];
       }
     }
+    if (!transferTo && weekdayHints.length >= 2) {
+      transferTo = weekdayHints[weekdayHints.length - 1];
+    }
   }
 
-  return { type: "single", month, date, period: periodMatch ? periodMatch[1] : null, subject: subjectMatch ? subjectMatch[2] : "授業", status, transferTo };
+  return { type: "single", month, date, day, period: periodMatch ? periodMatch[1] : null, subject, status, transferTo, room: roomMatch ? roomMatch[1] : "" };
 }
 // 課題の描画[cite: 1]
 function renderTasks() {
@@ -542,8 +561,8 @@ if (analyzeBtn) {
     const text = document.getElementById("changeText").value;
     const preview = document.getElementById("changePreview");
     const parsed = parseChangeText(text);
-    if (!parsed || !parsed.month) {
-      preview.innerHTML = "<p style='color:red;'>形式が正しくありません。「○月○日」を含めてください。</p>";
+    if (!parsed || (!parsed.day && !parsed.month)) {
+      preview.innerHTML = "<p style='color:red;'>形式が正しくありません。「月曜」などの曜日、または「○月○日」を含めてください。</p>";
       return;
     }
 
@@ -564,13 +583,16 @@ if (analyzeBtn) {
       let resultHtml = `
         <div style="padding:10px; background:#f0f7f4; border-radius:8px; border:1px solid #9ed8c6;">
           <strong>解析結果:</strong><br>
-          📅 ${parsed.month}/${parsed.date} <br>
+          📅 ${parsed.month && parsed.date ? `${parsed.month}/${parsed.date}` : `${parsed.day}曜`} <br>
           📌 ${parsed.period}限 <br>
           📌 科目: ${parsed.subject} <br>
           📌 状態: ${parsed.status}
       `;
       if (parsed.transferTo) {
         resultHtml += `<br>📌 振替先: ${parsed.transferTo}`;
+      }
+      if (parsed.room) {
+        resultHtml += `<br>📌 教室: ${parsed.room}`;
       }
       resultHtml += `</div>`;
       preview.innerHTML = resultHtml;
@@ -579,30 +601,30 @@ if (analyzeBtn) {
       return;
     }
 
-    preview.innerHTML = "<p style='color:red;'>形式が正しくありません。「○月○日 ○限」を含めてください。</p>";
+    preview.innerHTML = "<p style='color:red;'>形式が正しくありません。「月曜 ○限」または「○月○日 ○限」を含めてください。</p>";
   };
 }
 
 // 例文ボタンのイベント登録
 document.getElementById("exampleTransfer").onclick = () => {
-  document.getElementById("changeText").value = "5月10日 2限 英語A 振替 金曜日";
+  document.getElementById("changeText").value = "月曜2限を金曜に振替";
 };
 document.getElementById("exampleSchedule").onclick = () => {
-  document.getElementById("changeText").value = "5月10日 2限 英語A";
+  document.getElementById("changeText").value = "月曜2限 英語A 追加";
 };
 document.getElementById("exampleCancel").onclick = () => {
-  document.getElementById("changeText").value = "5月10日 2限 英語A 休講";
+  document.getElementById("changeText").value = "月曜2限 英語A 教室変更 302教室";
 };
 
 // 反映ボタンの処理（ルール：予定が被っている時は確認する）
 const applyBtn = document.getElementById("applyChangeButton");
 if (applyBtn) {
   applyBtn.onclick = () => {
-    if (!changeAnalysis.month) {
+    if (!changeAnalysis.day && !changeAnalysis.month) {
       alert("解析してください。");
       return;
     }
-    const day = getDayFromDate(changeAnalysis.month, changeAnalysis.date);
+    const day = changeAnalysis.day || getDayFromDate(changeAnalysis.month, changeAnalysis.date);
     const periodId = Number(changeAnalysis.period);
 
     if (changeAnalysis.type === "schedule") {
@@ -628,7 +650,7 @@ if (applyBtn) {
       }
     } else if (changeAnalysis.status === "補講") {
       // 追加
-      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "補講", day: day, period: changeAnalysis.period, room: "", status: "通常" });
+      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "補講", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
     } else if (changeAnalysis.status === "振替") {
       // 該当lessonを探してdayを変更
       const lesson = state.lessons.find(l => l.day === day && Number(l.period) === periodId);
@@ -638,9 +660,17 @@ if (applyBtn) {
         alert("振替先が指定されていません。");
         return;
       }
+    } else if (changeAnalysis.status === "変更") {
+      const lesson = state.lessons.find(l => l.day === day && Number(l.period) === periodId);
+      if (lesson) {
+        if (changeAnalysis.subject && changeAnalysis.subject !== "授業") lesson.name = changeAnalysis.subject;
+        if (changeAnalysis.room) lesson.room = changeAnalysis.room;
+      } else {
+        state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
+      }
     } else {
       // 追加
-      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: "", status: "通常" });
+      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
     }
 
     alert("スケジュールに反映しました。");
