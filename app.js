@@ -70,10 +70,12 @@ function renderTimetable() {
       html += `<div class="tt-cell"><div class="tt-stack">${items.map(l => `
         <div class="lesson-card ${l.status === '休講' ? 'cancelled' : ''}" data-id="${l.id}" draggable="true" ondragstart="dragLesson(event, '${l.id}')">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-            <div style="flex:1; cursor:pointer;" onclick="editLesson('${l.id}')"><strong>${l.name}</strong></div>
+            <div class="lesson-info" style="flex:1; cursor:pointer;" onclick="editLesson('${l.id}')">
+              <strong class="lesson-name">${l.name}</strong>
+              ${l.room ? `<span class="lesson-room">${l.room}</span>` : ""}
+            </div>
             <button onclick="event.stopPropagation(); deleteLesson('${l.id}');" style="color:#d32f2f; border:none; background:none; font-size:12px; padding:0;">削除</button>
           </div>
-          ${l.room ? `<div style="margin-top:4px; color: var(--muted); font-size:13px;">教室: ${l.room}</div>` : ""}
         </div>`).join("")}</div></div>`;
     });
   });
