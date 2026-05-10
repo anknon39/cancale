@@ -682,3 +682,13 @@ if (applyBtn) {
         return;
       }
     } else {
+      // 追加
+      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
+    }
+
+    alert("スケジュールに反映しました。");
+    renderTimetable();
+    renderTodayLessons();
+    save();
+  };
+}
