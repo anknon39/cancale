@@ -1,50 +1,287 @@
 :root {
-  --ink: #182126; --muted: #506977; --line: #d8e0e3; --panel: #ffffff;
-  --bg: #eef3f1; --accent: #176b5d; --accent-strong: #0f4f45;
-  --warn: #b35c00; --danger: #b63c45; --info: #245a9b;
-  --soft-green: #dcebe5; --soft-blue: #e0e8f5; --soft-yellow: #f5ecd7;
+  --ink: #182126;
+  --muted: #506977;
+  --line: #d8e0e3;
+  --panel: #ffffff;
+  --bg: #eef3f1;
+  --accent: #176b5d;
+  --accent-strong: #0f4f45;
+  --warn: #b35c00;
+  --danger: #b63c45;
+  --info: #245a9b;
+  --soft-green: #dcebe5;
+  --soft-blue: #e0e8f5;
+  --soft-yellow: #f5ecd7;
   --shadow: 0 12px 30px rgba(28, 43, 48, 0.08);
 }
-* { box-sizing: border-box; }
-body { color: var(--ink); background: var(--bg); font-family: "Yu Gothic", "Hiragino Sans", "Meiryo", system-ui, sans-serif; margin: 0; }
-button, input, select, textarea { font: inherit; }
-button { cursor: pointer; }
-.app-shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; }
-.sidebar { display: flex; flex-direction: column; gap: 28px; padding: 24px; background: #132823; color: white; }
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand-mark { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 8px; color: #102520; background: #9ed8c6; font-weight: 800; }
-.nav-list { display: grid; gap: 8px; }
-.nav-item { width: 100%; border: 0; border-radius: 8px; padding: 12px 14px; color: #dce8e4; background: transparent; text-align: left; }
-.nav-item.active, .nav-item:hover { color: white; background: rgba(255, 255, 255, 0.12); }
-.main { padding: 28px; min-width: 0; }
-.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.eyebrow { color: var(--muted); font-size: 13px; font-weight: 700; text-transform: uppercase; margin: 0 0 4px; }
-h1 { font-size: 32px; font-weight: 800; margin: 0; }
-.primary-action { border: 0; border-radius: 8px; padding: 0 16px; min-height: 40px; color: white; background: var(--accent); font-weight: 700; }
-.secondary-action { border: 1px solid var(--line); border-radius: 8px; padding: 0 16px; min-height: 40px; color: var(--ink); background: white; font-weight: 700; }
-.view { display: none; }
-.view.active { display: block; }
-.panel { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: var(--panel); box-shadow: var(--shadow); }
-.panel-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-.panel-heading h2 { font-size: 18px; margin: 0; }
-.lesson-card { border: 1px solid var(--line); border-left: 5px solid var(--accent); border-radius: 8px; padding: 12px; background: #fbfcfc; }
-.cancelled { opacity: 0.5; color: gray; }
-.card-title { font-weight: 800; }
-.card-meta { color: var(--muted); font-size: 13px; }
-.badge { border-radius: 999px; padding: 3px 9px; font-size: 12px; font-weight: 800; background: var(--soft-green); }
-.timetable { display: grid; grid-template-columns: 96px repeat(5, minmax(150px, 1fr)); border: 1px solid var(--line); border-radius: 8px; background: white; overflow: auto; }
-.tt-cell { min-height: 104px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 10px; }
-.tt-cell.header, .tt-cell.period { background: #f7faf9; font-weight: 800; color: var(--muted); display: grid; place-items: center; }
-.dialog-form { display: grid; gap: 12px; padding: 22px; }
-.dialog-form label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
-.dialog-form input, .dialog-form select { min-height: 40px; border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; }
-.button-row { display: flex; gap: 12px; margin-top: 16px; }
-.period-row { display: grid; grid-template-columns: 60px 1fr 1fr; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-.empty-message { text-align: center; color: var(--muted); font-style: italic; padding: 40px 0; }/* Smartphone: keep the desktop layout and allow horizontal scrolling. */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--ink);
+  background: var(--bg);
+  font-family: "Yu Gothic", "Hiragino Sans", "Meiryo", system-ui, sans-serif;
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 24px;
+  background: #132823;
+  color: white;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 8px;
+  color: #102520;
+  background: #9ed8c6;
+  font-weight: 800;
+}
+
+.nav-list {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-item {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: #dce8e4;
+  background: transparent;
+  text-align: left;
+}
+
+.nav-item.active,
+.nav-item:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.main {
+  padding: 28px;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.primary-action {
+  border: 0;
+  border-radius: 8px;
+  padding: 0 16px;
+  min-height: 40px;
+  color: white;
+  background: var(--accent);
+  font-weight: 700;
+}
+
+.secondary-action {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 16px;
+  min-height: 40px;
+  color: var(--ink);
+  background: white;
+  font-weight: 700;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.panel-heading h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.lesson-card {
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fbfcfc;
+}
+
+.cancelled {
+  opacity: 0.5;
+  color: gray;
+}
+
+.card-title {
+  font-weight: 800;
+}
+
+.card-meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 800;
+  background: var(--soft-green);
+}
+
+.timetable {
+  display: grid;
+  grid-template-columns: 96px repeat(5, minmax(150px, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  overflow: auto;
+}
+
+.tt-cell {
+  min-height: 104px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 10px;
+}
+
+.tt-cell.header,
+.tt-cell.period {
+  background: #f7faf9;
+  font-weight: 800;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+}
+
+.dialog-form {
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+}
+
+.dialog-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.dialog-form input,
+.dialog-form select {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.period-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+  padding: 40px 0;
+}
+
+/* Smartphone: keep the desktop layout and allow horizontal scrolling. */
 html,
 body {
   min-width: 1180px;
   overflow-x: auto;
+}
+
+.app-shell {
+  min-width: 1180px;
+}
+
+.main {
+  min-width: 940px;
+}
+
+.timetable {
+  min-width: 920px;
+}
+
 }
 
 .app-shell {
