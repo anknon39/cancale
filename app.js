@@ -23,6 +23,12 @@ let state = JSON.parse(localStorage.getItem("komapass-state")) || {
 };
 state.periods = (state.periods || structuredClone(defaultPeriods)).filter(p => Number(p.id) <= 4);
 state.lessons = (state.lessons || []).filter(l => Number(l.period) <= 4);
+state.periods = defaultPeriods.map(defaultPeriod => {
+  const savedPeriod = state.periods.find(p => Number(p.id) === defaultPeriod.id);
+  return savedPeriod ? { ...defaultPeriod, ...savedPeriod, id: defaultPeriod.id } : { ...defaultPeriod };
+});
+state.lessons = state.lessons.filter(l => Number(l.period) >= 1 && Number(l.period) <= 4);
+localStorage.setItem("komapass-state", JSON.stringify(state));
 
 const save = () => localStorage.setItem("komapass-state", JSON.stringify(state));
 const uid = () => `l-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -351,6 +357,7 @@ document.getElementById("editTestForm").onsubmit = (e) => {
 
 document.getElementById("lessonForm").onsubmit = (e) => {
   const f = new FormData(e.target);
+  if (Number(f.get("lessonPeriod")) > 4) return;
   state.lessons.push({ id: uid(), name: f.get("lessonName"), day: f.get("lessonDay"), period: f.get("lessonPeriod"), room: f.get("lessonRoom") });
   save();
   renderTimetable();
@@ -362,6 +369,7 @@ document.getElementById("editLessonForm").onsubmit = (e) => {
   const id = f.get("editLessonId");
   const lesson = state.lessons.find(l => l.id === id);
   if (lesson) {
+    if (Number(f.get("editLessonPeriod")) > 4) return;
     lesson.name = f.get("editLessonName");
     lesson.day = f.get("editLessonDay");
     lesson.period = f.get("editLessonPeriod");
@@ -668,9 +676,13 @@ if (applyBtn) {
     }
     const day = changeAnalysis.day || getDayFromDate(changeAnalysis.month, changeAnalysis.date);
     const periodId = Number(changeAnalysis.period);
+    if (periodId > 4) {
+      alert("5限・6限は使わない設定です。1〜4限を指定してください。");
+      return;
+    }
 
     if (changeAnalysis.type === "schedule") {
-      changeAnalysis.lessons.forEach(lesson => {
+      changeAnalysis.lessons.filter(lesson => Number(lesson.period) <= 4).forEach(lesson => {
         state.lessons.push({
           id: uid(),
           name: lesson.subject,
@@ -716,15 +728,3 @@ if (applyBtn) {
       if (state.lessons.length === beforeCount) {
         alert("削除する授業が見つかりませんでした。");
         return;
-      }
-    } else {
-      // 追加
-      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
-    }
-
-    alert("スケジュールに反映しました。");
-    renderTimetable();
-    renderTodayLessons();
-    save();
-  };
-}
