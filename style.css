@@ -263,57 +263,175 @@ h1 {
   padding: 40px 0;
 }
 
-/* Smartphone: keep the desktop layout and allow horizontal scrolling. */
-html,
-body {
-  min-width: 1180px;
-  overflow-x: auto;
-}
+/* Mobile optimized layout */
+@media (max-width: 760px) {
+  html,
+  body {
+    min-width: 0;
+    width: 100%;
+    overflow-x: hidden;
+  }
 
-.app-shell {
-  min-width: 1180px;
-}
+  body {
+    background: var(--bg);
+  }
 
-.main {
-  min-width: 940px;
-}
+  .app-shell {
+    display: block;
+    min-width: 0;
+    min-height: 100vh;
+  }
 
-.timetable {
-  min-width: 920px;
-}
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: block;
+    padding: 14px 14px 12px;
+    background: #132823;
+  }
 
-}
+  .brand {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
 
-.app-shell {
-  min-width: 1180px;
-}
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 16px;
+  }
 
-.sidebar {
-  flex: 0 0 240px;
-}
+  .brand strong {
+    display: block;
+    font-size: 18px;
+  }
 
-.main {
-  min-width: 940px;
-}
+  .brand span {
+    font-size: 13px;
+    color: #bfd2cd;
+  }
 
-.timetable {
-  min-width: 920px;
-}
+  .nav-list {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
 
-.topbar,
-.button-row,
-.panel-heading {
-  flex-wrap: nowrap;
-}
+  .nav-list::-webkit-scrollbar {
+    display: none;
+  }
 
-button,
-.nav-item,
-.primary-action,
-.secondary-action,
-h1,
-h2,
-.card-title,
-.card-meta,
-.badge {
-  white-space: nowrap;
+  .nav-item {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 88px;
+    padding: 10px 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .main {
+    min-width: 0;
+    width: 100%;
+    padding: 18px 14px 28px;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+  }
+
+  h1 {
+    font-size: 30px;
+    line-height: 1.2;
+  }
+
+  .dashboard,
+  .change-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .panel {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .panel-heading {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .toolbar,
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .primary-action,
+  .secondary-action {
+    min-height: 42px;
+    padding: 0 14px;
+    white-space: nowrap;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 160px;
+  }
+
+  .timetable {
+    grid-template-columns: 76px repeat(5, minmax(132px, 1fr));
+    min-width: 736px;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tt-cell {
+    min-height: 96px;
+    padding: 8px;
+  }
+
+  .tt-cell.period {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .lesson-card {
+    padding: 10px;
+  }
+
+  .card-title {
+    font-size: 14px;
+  }
+
+  .card-meta {
+    font-size: 12px;
+  }
+
+  .period-row {
+    grid-template-columns: 54px 1fr 1fr;
+    gap: 8px;
+  }
+
+  dialog {
+    width: calc(100vw - 28px);
+    max-width: 460px;
+  }
+
+  dialog form,
+  .dialog-form {
+    padding: 18px;
+  }
 }
