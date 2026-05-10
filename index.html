@@ -212,9 +212,10 @@
   <dialog id="lessonDialog">
     <form id="lessonForm" method="dialog">
       <h3>授業の追加</h3>
-      <input type="text" name="lessonName" placeholder="授業名" required style="width:100%; margin-bottom:10px;">
+      <input id="lessonName" type="text" name="lessonName" placeholder="授業名" required
+        style="width:100%; margin-bottom:10px;">
       <div style="display:flex; gap:10px; margin-bottom:10px;">
-        <select name="lessonDay" required style="flex:1;">
+        <select id="lessonDay" name="lessonDay" required style="flex:1;">
           <option value="">曜日を選択</option>
           <option value="月">月</option>
           <option value="火">火</option>
@@ -222,7 +223,7 @@
           <option value="木">木</option>
           <option value="金">金</option>
         </select>
-        <select name="lessonPeriod" required style="flex:1;">
+        <select id="lessonPeriod" name="lessonPeriod" required style="flex:1;">
           <option value="">時限を選択</option>
           <option value="1">1限</option>
           <option value="2">2限</option>
@@ -231,7 +232,7 @@
 
         </select>
       </div>
-      <input type="text" name="lessonRoom" placeholder="教室" style="width:100%; margin-bottom:10px;">
+      <input id="lessonRoom" type="text" name="lessonRoom" placeholder="教室" style="width:100%; margin-bottom:10px;">
       <div class="button-row">
         <button type="button" class="secondary-action" id="cancelLessonButton">キャンセル</button>
         <button type="submit" class="primary-action">保存</button>
