@@ -265,6 +265,7 @@ h1 {
 
 /* Mobile optimized layout */
 @media (max-width: 760px) {
+
   html,
   body {
     width: 100%;
@@ -415,18 +416,24 @@ h1 {
   }
 
   .tt-cell.header {
-    min-height: 38px;
+    min-height: 50px;
     display: grid;
     place-items: center;
     color: #647887;
-    background: transparent;
+    background: #ffffff;
+    border-radius: 12px;
     font-size: 16px;
     font-weight: 900;
-    line-height: 1.1;
+    line-height: 1.2;
+    text-align: center;
   }
 
   .tt-cell.header small {
-    display: none;
+    display: block;
+    margin-top: 3px;
+    color: #7f909c;
+    font-size: 10px;
+    font-weight: 800;
   }
 
   .tt-cell.period {
