@@ -359,12 +359,20 @@ document.getElementById("editTestForm").onsubmit = (e) => {
 };
 
 document.getElementById("lessonForm").onsubmit = (e) => {
+  e.preventDefault();
   const f = new FormData(e.target);
   if (Number(f.get("lessonPeriod")) > 4) return;
-  state.lessons.push({ id: uid(), name: f.get("lessonName"), day: f.get("lessonDay"), period: f.get("lessonPeriod"), room: f.get("lessonRoom") });
+  state.lessons.push({
+    id: uid(),
+    name: f.get("lessonName"),
+    day: f.get("lessonDay"),
+    period: f.get("lessonPeriod"),
+    room: String(f.get("lessonRoom") || "").trim()
+  });
   save();
   renderTimetable();
   renderTodayLessons();
+  document.getElementById("lessonDialog").close();
 };
 
 document.getElementById("editLessonForm").onsubmit = (e) => {
