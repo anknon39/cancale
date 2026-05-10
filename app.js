@@ -61,20 +61,23 @@ function switchView(viewId) {
 
 window.switchView = switchView;
 
-document.querySelectorAll(".nav-item").forEach(n => {
-  console.log("Setting up listener for:", n.getAttribute("data-view"));
-  n.addEventListener("click", (e) => {
-    e.preventDefault();
-    console.log("Clicked:", n.getAttribute("data-view"));
-    switchView(n.getAttribute("data-view"));
-  });
-});
-
-document.addEventListener("click", (e) => {
+function handleNavClick(e) {
   const navItem = e.target.closest(".nav-item");
   if (!navItem) return;
   e.preventDefault();
-  switchView(navItem.getAttribute("data-view"));
+  const viewId = navItem.getAttribute("data-view");
+  if (!viewId) return;
+  window.location.hash = `#${viewId}`;
+  switchView(viewId);
+}
+
+document.querySelectorAll(".nav-item").forEach(n => {
+  n.addEventListener("click", handleNavClick);
+});
+
+window.addEventListener("hashchange", () => {
+  const viewId = window.location.hash.slice(1) || "home";
+  switchView(viewId);
 });
 
 // --- 3. 描画ロジック ---
@@ -396,7 +399,7 @@ function init() {
   renderTodayLessons();
   // トップバーに今日の日付を表示
   document.getElementById("todayDateLabel").textContent = `${currentMonth}/${currentDate} (${currentDayName})`;
-  const initialView = document.querySelector(".view.active")?.id || "home";
+  const initialView = window.location.hash.slice(1) || document.querySelector(".view.active")?.id || "home";
   switchView(initialView);
 }
 init();
@@ -728,3 +731,15 @@ if (applyBtn) {
       if (state.lessons.length === beforeCount) {
         alert("削除する授業が見つかりませんでした。");
         return;
+      }
+    } else {
+      // 追加
+      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
+    }
+
+    alert("スケジュールに反映しました。");
+    renderTimetable();
+    renderTodayLessons();
+    save();
+  };
+}
