@@ -195,12 +195,10 @@ h1 {
 }
 
 .timetable {
-  display: grid;
-  grid-template-columns: 96px repeat(5, minmax(150px, 1fr));
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: white;
-  overflow: auto;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: 42px repeat(5, minmax(0, 1fr));
+  overflow: visible;
 }
 
 .tt-cell {
