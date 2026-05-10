@@ -659,7 +659,7 @@ if (exampleTransferButton) {
 const exampleScheduleButton = document.getElementById("exampleSchedule");
 if (exampleScheduleButton) {
   exampleScheduleButton.onclick = () => {
-    document.getElementById("changeText").value = "月曜2限 英語A 追加";
+    document.getElementById("changeText").value = "月曜2限 英語A 302教室 追加";
   };
 }
 
