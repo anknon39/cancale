@@ -29,10 +29,18 @@ const uid = () => `l-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 // --- 2. タブ切り替え ---
 function switchView(viewId) {
   console.log("Switching to view:", viewId);
-  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   const target = document.getElementById(viewId);
-  console.log("Target element:", target);
-  if (target) target.classList.add("active");
+  if (!target) {
+    console.warn("View not found:", viewId);
+    return;
+  }
+
+  document.querySelectorAll(".view").forEach(v => {
+    const isActive = v.id === viewId;
+    v.classList.toggle("active", isActive);
+    v.hidden = !isActive;
+    v.style.display = isActive ? "block" : "none";
+  });
 
   document.querySelectorAll(".nav-item").forEach(n => {
     n.classList.toggle("active", n.getAttribute("data-view") === viewId);
@@ -40,6 +48,8 @@ function switchView(viewId) {
 
   const titles = { home: "ホーム", timetable: "時間割", changes: "変更追加", tasks: "課題", tests: "テスト", settings: "設定" };
   document.getElementById("viewTitle").textContent = titles[viewId] || "キャンカレ";
+
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }
 
 window.switchView = switchView;
@@ -377,6 +387,8 @@ function init() {
   renderTodayLessons();
   // トップバーに今日の日付を表示
   document.getElementById("todayDateLabel").textContent = `${currentMonth}/${currentDate} (${currentDayName})`;
+  const initialView = document.querySelector(".view.active")?.id || "home";
+  switchView(initialView);
 }
 init();
 
