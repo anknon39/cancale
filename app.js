@@ -4,7 +4,6 @@ const days_short = ["月", "火", "水", "木", "金"];
 const defaultPeriods = [
   { id: 1, start: "09:00", end: "10:30" }, { id: 2, start: "10:40", end: "12:10" },
   { id: 3, start: "13:00", end: "14:30" }, { id: 4, start: "14:40", end: "16:10" },
-  { id: 5, start: "16:20", end: "17:50" }, { id: 6, start: "18:00", end: "19:30" },
 ];
 
 const today = new Date();
@@ -22,6 +21,8 @@ let state = JSON.parse(localStorage.getItem("komapass-state")) || {
   periods: structuredClone(defaultPeriods),
   tasks: []
 };
+state.periods = (state.periods || structuredClone(defaultPeriods)).filter(p => Number(p.id) <= 4);
+state.lessons = (state.lessons || []).filter(l => Number(l.period) <= 4);
 
 const save = () => localStorage.setItem("komapass-state", JSON.stringify(state));
 const uid = () => `l-${Date.now()}-${Math.random().toString(16).slice(2)}`;
