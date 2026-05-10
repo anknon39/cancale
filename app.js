@@ -154,7 +154,7 @@ function parseChangeText(rawText) {
 
   // 既存の単一行解析ロジック
   const periodMatch = rawText.match(/(\d+)限/);
-  const status = rawText.includes("休講") ? "休講" : (rawText.includes("補講") ? "補講" : (rawText.includes("振替") ? "振替" : (rawText.includes("変更") ? "変更" : "通常")));
+  const status = rawText.includes("削除") ? "削除" : (rawText.includes("休講") ? "休講" : (rawText.includes("補講") ? "補講" : (rawText.includes("振替") ? "振替" : (rawText.includes("変更") ? "変更" : "通常"))));
   const roomPattern = /(PC-\d+|研究室\d+|[A-Za-z]*\d{1,4}(?:-\d{1,4}){0,3})\s*教室?/;
   const roomMatch = rawText.match(roomPattern);
   let subject = "授業";
@@ -162,7 +162,7 @@ function parseChangeText(rawText) {
     const afterPeriod = rawText.slice(rawText.indexOf(periodMatch[0]) + periodMatch[0].length);
     subject = afterPeriod
       .replace(/を.*$/, "")
-      .replace(/(休講|補講|振替|変更|教室変更|追加|登録).*/, "")
+      .replace(/(休講|補講|振替|変更|教室変更|追加|登録|削除).*/, "")
       .replace(roomPattern, "")
       .trim() || "授業";
   }
@@ -618,6 +618,9 @@ document.getElementById("exampleSchedule").onclick = () => {
 document.getElementById("exampleCancel").onclick = () => {
   document.getElementById("changeText").value = "月曜2限 英語A 教室変更 302教室";
 };
+document.getElementById("exampleDelete").onclick = () => {
+  document.getElementById("changeText").value = "月曜2限 削除";
+};
 
 // 反映ボタンの処理（ルール：予定が被っている時は確認する）
 const applyBtn = document.getElementById("applyChangeButton");
@@ -671,14 +674,11 @@ if (applyBtn) {
       } else {
         state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
       }
+    } else if (changeAnalysis.status === "削除") {
+      const beforeCount = state.lessons.length;
+      state.lessons = state.lessons.filter(l => !(l.day === day && Number(l.period) === periodId));
+      if (state.lessons.length === beforeCount) {
+        alert("削除する授業が見つかりませんでした。");
+        return;
+      }
     } else {
-      // 追加
-      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
-    }
-
-    alert("スケジュールに反映しました。");
-    renderTimetable();
-    renderTodayLessons();
-    save();
-  };
-}
