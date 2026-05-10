@@ -402,8 +402,8 @@ h1 {
     width: 100%;
     min-width: 0;
     display: grid;
-    grid-template-columns: 48px repeat(5, minmax(0, 1fr));
-    gap: 8px 5px;
+    grid-template-columns: 38px repeat(5, minmax(0, 1fr));
+    gap: 8px 3px;
     border: 0;
     border-radius: 0;
     background: transparent;
@@ -473,7 +473,7 @@ h1 {
     height: 100%;
     display: grid;
     gap: 4px;
-    padding: 4px;
+    padding: 2px;
   }
 
   .lesson-card {
