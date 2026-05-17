@@ -32,6 +32,12 @@ localStorage.setItem("komapass-state", JSON.stringify(state));
 
 const save = () => localStorage.setItem("komapass-state", JSON.stringify(state));
 const uid = () => `l-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+const escapeHtml = value => String(value ?? "")
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;")
+  .replaceAll("'", "&#039;");
 
 // --- 2. タブ切り替え ---
 function switchView(viewId) {
@@ -102,8 +108,8 @@ function renderTimetable() {
         <div class="lesson-card ${l.status === '休講' ? 'cancelled' : ''}" data-id="${l.id}" draggable="true" ondragstart="dragLesson(event, '${l.id}')">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
             <div class="lesson-info" style="flex:1; cursor:pointer;" onclick="editLesson('${l.id}')">
-              <strong class="lesson-name"><span class="lesson-name-text">${l.name}</span></strong>
-              ${l.room ? `<span class="lesson-room"><span class="lesson-room-text">${l.room}</span></span>` : ""}
+              <strong class="lesson-name"><span class="lesson-name-text">${escapeHtml(l.name)}</span></strong>
+              ${l.room ? `<span class="lesson-room"><span class="lesson-room-text">${escapeHtml(l.room)}</span></span>` : ""}
             </div>
             <button onclick="event.stopPropagation(); deleteLesson('${l.id}');" style="color:#d32f2f; border:none; background:none; font-size:12px; padding:0;">削除</button>
           </div>
@@ -120,7 +126,7 @@ function fitLessonNames() {
     document.querySelectorAll(".lesson-name").forEach(name => {
       const text = name.querySelector(".lesson-name-text") || name;
       const nameText = text.textContent.trim();
-      const shouldFitOneLine = [...nameText].length <= 12;
+      const shouldFitOneLine = !nameText.includes("\n") && [...nameText].length <= 12;
 
       name.classList.toggle("fit-name-one-line", shouldFitOneLine);
       text.style.setProperty("--name-scale", "1");
@@ -431,7 +437,7 @@ document.getElementById("lessonForm").onsubmit = (e) => {
   if (Number(f.get("lessonPeriod")) > 4) return;
   state.lessons.push({
     id: uid(),
-    name: f.get("lessonName"),
+    name: String(f.get("lessonName") || "").trim(),
     day: f.get("lessonDay"),
     period: f.get("lessonPeriod"),
     room: String(f.get("lessonRoom") || "").trim()
@@ -448,7 +454,7 @@ document.getElementById("editLessonForm").onsubmit = (e) => {
   const lesson = state.lessons.find(l => l.id === id);
   if (lesson) {
     if (Number(f.get("editLessonPeriod")) > 4) return;
-    lesson.name = f.get("editLessonName");
+    lesson.name = String(f.get("editLessonName") || "").trim();
     lesson.day = f.get("editLessonDay");
     lesson.period = f.get("editLessonPeriod");
     lesson.room = f.get("editLessonRoom");
