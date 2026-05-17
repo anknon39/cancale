@@ -45,7 +45,11 @@ function switchView(viewId) {
   document.querySelectorAll(".view").forEach(v => {
     const isActive = v.id === viewId;
     v.classList.toggle("active", isActive);
-    v.hidden = !isActive;
+    if (isActive) {
+      v.removeAttribute("hidden");
+    } else {
+      v.setAttribute("hidden", "");
+    }
     v.style.display = isActive ? "block" : "none";
   });
 
@@ -54,9 +58,10 @@ function switchView(viewId) {
   });
 
   const titles = { home: "ホーム", timetable: "時間割", changes: "変更追加", tasks: "課題", tests: "テスト", settings: "設定" };
-  document.getElementById("viewTitle").textContent = titles[viewId] || "キャンカレ";
+  const viewTitle = document.getElementById("viewTitle");
+  if (viewTitle) viewTitle.textContent = titles[viewId] || "キャンカレ";
 
-  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 }
 
 window.switchView = switchView;
@@ -71,9 +76,7 @@ function handleNavClick(e) {
   switchView(viewId);
 }
 
-document.querySelectorAll(".nav-item").forEach(n => {
-  n.addEventListener("click", handleNavClick);
-});
+document.addEventListener("click", handleNavClick, true);
 
 window.addEventListener("hashchange", () => {
   const viewId = window.location.hash.slice(1) || "home";
