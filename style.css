@@ -173,7 +173,7 @@ h1 {
   border-left: 5px solid var(--accent);
   border-radius: 8px;
   padding: 12px;
-  background: #fbfcfc;
+  background: #000000;
 }
 
 .cancelled {
