@@ -137,15 +137,18 @@ function parseLessonLine(line) {
   const periodMatch = line.match(/(\d+)限/);
   if (periodMatch) lesson.period = periodMatch[1];
 
-  const locationMatch = line.match(/(?:（場所[:：]\s*(.+?)）|[(（]場所[:：]\s*(.+?)[)）])/);
-  if (locationMatch) lesson.location = locationMatch[1] || locationMatch[2];
+  const locationMatch = line.match(/[（(]\s*(?:場所|教室)\s*[:：]\s*([0-9A-Za-z]+(?:-[0-9A-Za-z]+)*|PC-\d+|研究室\d+)\s*[）)]/);
+  if (locationMatch) lesson.location = locationMatch[1];
 
-  // 科目部分を抽出
-  let subjectText = line.replace(/.*?\d+限[:：]?\s*/, "");
+  let subjectText = line.replace(/^.*?\d+限\s*[:：]?\s*/, "");
   if (locationMatch) {
     subjectText = subjectText.replace(locationMatch[0], "").trim();
   }
-  lesson.subject = subjectText.replace(/[：:]+$/, "").trim();
+  subjectText = subjectText
+    .replace(/[（(]\s*(?:場所|教室)\s*[:：]\s*[^）)]+[）)]/g, "")
+    .replace(/[：:]+$/, "")
+    .trim();
+  lesson.subject = subjectText;
 
   return lesson.period && lesson.subject ? lesson : null;
 }
@@ -172,7 +175,7 @@ function parseChangeText(rawText) {
     day = weekdayHints[0];
   }
 
-  const lessonLines = lines.slice(1).filter(l => l.match(/\d{1,2}:\d{2}/) && l.match(/\d+限/));
+  const lessonLines = lines.filter(l => l.match(/\d{1,2}:\d{2}/) && l.match(/\d+限/));
   if (lessonLines.length > 0) {
     const lessons = lessonLines.map(parseLessonLine).filter(Boolean).map(item => ({ ...item, day }));
     if (lessons.length > 0) {
@@ -183,7 +186,7 @@ function parseChangeText(rawText) {
   // 既存の単一行解析ロジック
   const periodMatch = rawText.match(/(\d+)限/);
   const status = rawText.includes("削除") ? "削除" : (rawText.includes("休講") ? "休講" : (rawText.includes("補講") ? "補講" : (rawText.includes("振替") ? "振替" : (rawText.includes("変更") ? "変更" : "通常"))));
-  const roomPattern = /(PC-\d+|研究室\d+|[A-Za-z]*\d{1,4}(?:-\d{1,4}){0,3})\s*教室?/;
+  const roomPattern = /(?:[（(]\s*(?:場所|教室)\s*[:：]\s*)?(PC-\d+|研究室\d+|[0-9A-Za-z]+(?:-[0-9A-Za-z]+)+|\d{3,4})\s*(?:教室)?\s*[）)]?/;
   const roomMatch = rawText.match(roomPattern);
   let subject = "授業";
   if (periodMatch) {
@@ -191,6 +194,7 @@ function parseChangeText(rawText) {
     subject = afterPeriod
       .replace(/を.*$/, "")
       .replace(/(休講|補講|振替|変更|教室変更|追加|登録|削除).*/, "")
+      .replace(/[（(]\s*(?:場所|教室)\s*[:：]\s*[^）)]+[）)]/g, "")
       .replace(roomPattern, "")
       .trim() || "授業";
   }
