@@ -102,7 +102,7 @@ function renderTimetable() {
         <div class="lesson-card ${l.status === '休講' ? 'cancelled' : ''}" data-id="${l.id}" draggable="true" ondragstart="dragLesson(event, '${l.id}')">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
             <div class="lesson-info" style="flex:1; cursor:pointer;" onclick="editLesson('${l.id}')">
-              <strong class="lesson-name">${l.name}</strong>
+              <strong class="lesson-name"><span class="lesson-name-text">${l.name}</span></strong>
               ${l.room ? `<span class="lesson-room"><span class="lesson-room-text">${l.room}</span></span>` : ""}
             </div>
             <button onclick="event.stopPropagation(); deleteLesson('${l.id}');" style="color:#d32f2f; border:none; background:none; font-size:12px; padding:0;">削除</button>
@@ -111,7 +111,30 @@ function renderTimetable() {
     });
   });
   grid.innerHTML = html;
+  fitLessonNames();
   fitLessonRooms();
+}
+
+function fitLessonNames() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".lesson-name").forEach(name => {
+      const text = name.querySelector(".lesson-name-text") || name;
+      const nameText = text.textContent.trim();
+      const shouldFitOneLine = [...nameText].length <= 12;
+
+      name.classList.toggle("fit-name-one-line", shouldFitOneLine);
+      text.style.setProperty("--name-scale", "1");
+
+      if (!shouldFitOneLine) return;
+
+      const availableWidth = name.clientWidth - 4;
+      const neededWidth = text.scrollWidth;
+      if (availableWidth > 0 && neededWidth > availableWidth) {
+        const scale = Math.max(0.45, Math.min(1, availableWidth / neededWidth));
+        text.style.setProperty("--name-scale", scale.toFixed(3));
+      }
+    });
+  });
 }
 
 function fitLessonRooms() {
