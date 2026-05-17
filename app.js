@@ -1,3 +1,253 @@
+// --- 1. データと初期化[cite: 1] ---
+const days = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日"];
+const days_short = ["月", "火", "水", "木", "金"];
+const defaultPeriods = [
+  { id: 1, start: "09:00", end: "10:30" }, { id: 2, start: "10:40", end: "12:10" },
+  { id: 3, start: "13:00", end: "14:30" }, { id: 4, start: "14:40", end: "16:10" },
+];
+
+const today = new Date();
+const currentYear = today.getFullYear();
+const currentMonth = today.getMonth() + 1;
+const currentDate = today.getDate();
+const currentDayOfWeek = today.getDay(); // 0=日, 1=月, ..., 6=土
+const currentDayName = ["日", "月", "火", "水", "木", "金", "土"][currentDayOfWeek];
+const currentDayIndex = days_short.indexOf(currentDayName); // days_shortのインデックス
+
+let changeAnalysis = {};
+
+let state = JSON.parse(localStorage.getItem("komapass-state")) || {
+  lessons: [],
+  periods: structuredClone(defaultPeriods),
+  tasks: []
+};
+state.periods = (state.periods || structuredClone(defaultPeriods)).filter(p => Number(p.id) <= 4);
+state.lessons = (state.lessons || []).filter(l => Number(l.period) <= 4);
+state.periods = defaultPeriods.map(defaultPeriod => {
+  const savedPeriod = state.periods.find(p => Number(p.id) === defaultPeriod.id);
+  return savedPeriod ? { ...defaultPeriod, ...savedPeriod, id: defaultPeriod.id } : { ...defaultPeriod };
+});
+state.lessons = state.lessons.filter(l => Number(l.period) >= 1 && Number(l.period) <= 4);
+localStorage.setItem("komapass-state", JSON.stringify(state));
+
+const save = () => localStorage.setItem("komapass-state", JSON.stringify(state));
+const uid = () => `l-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+// --- 2. タブ切り替え ---
+function switchView(viewId) {
+  console.log("Switching to view:", viewId);
+  const target = document.getElementById(viewId);
+  if (!target) {
+    console.warn("View not found:", viewId);
+    return;
+  }
+
+  document.querySelectorAll(".view").forEach(v => {
+    const isActive = v.id === viewId;
+    v.classList.toggle("active", isActive);
+    v.hidden = !isActive;
+    v.style.display = isActive ? "block" : "none";
+  });
+
+  document.querySelectorAll(".nav-item").forEach(n => {
+    n.classList.toggle("active", n.getAttribute("data-view") === viewId);
+  });
+
+  const titles = { home: "ホーム", timetable: "時間割", changes: "変更追加", tasks: "課題", tests: "テスト", settings: "設定" };
+  document.getElementById("viewTitle").textContent = titles[viewId] || "キャンカレ";
+
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+}
+
+window.switchView = switchView;
+
+function handleNavClick(e) {
+  const navItem = e.target.closest(".nav-item");
+  if (!navItem) return;
+  e.preventDefault();
+  const viewId = navItem.getAttribute("data-view");
+  if (!viewId) return;
+  window.location.hash = `#${viewId}`;
+  switchView(viewId);
+}
+
+document.querySelectorAll(".nav-item").forEach(n => {
+  n.addEventListener("click", handleNavClick);
+});
+
+window.addEventListener("hashchange", () => {
+  const viewId = window.location.hash.slice(1) || "home";
+  switchView(viewId);
+});
+
+// --- 3. 描画ロジック ---
+
+// 時間割の描画[cite: 1]
+function renderTimetable() {
+  const grid = document.querySelector("#timetableGrid");
+  if (!grid) return;
+
+  let html = `<div class="tt-cell header"></div>` + days_short.map((d, i) => {
+    const dateStr = getDateForDay(i);
+    return `<div class="tt-cell header" data-day="${days_short[i]}" ondrop="dropLesson(event)" ondragover="allowDrop(event)">${days_short[i]}<br><small>${dateStr}</small></div>`;
+  }).join("");
+  state.periods.forEach(p => {
+    html += `<div class="tt-cell period"><strong>${p.id}限</strong><br><small>${p.start}</small></div>`;
+    days_short.forEach(d => {
+      const items = state.lessons.filter(l => l.day === d && Number(l.period) === p.id);
+      html += `<div class="tt-cell"><div class="tt-stack">${items.map(l => `
+        <div class="lesson-card ${l.status === '休講' ? 'cancelled' : ''}" data-id="${l.id}" draggable="true" ondragstart="dragLesson(event, '${l.id}')">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <div class="lesson-info" style="flex:1; cursor:pointer;" onclick="editLesson('${l.id}')">
+              <strong class="lesson-name">${l.name}</strong>
+              ${l.room ? `<span class="lesson-room">${l.room}</span>` : ""}
+            </div>
+            <button onclick="event.stopPropagation(); deleteLesson('${l.id}');" style="color:#d32f2f; border:none; background:none; font-size:12px; padding:0;">削除</button>
+          </div>
+        </div>`).join("")}</div></div>`;
+    });
+  });
+  grid.innerHTML = html;
+  fitLessonRooms();
+}
+
+function fitLessonRooms() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".lesson-room").forEach(room => {
+      const roomText = room.textContent.trim();
+      const isHyphenRoomCode = /^[^-]+-[^-]+-[^-]+$/.test(roomText);
+
+      room.classList.add("fit-room-one-line");
+      room.classList.toggle("room-code-one-line", isHyphenRoomCode);
+      room.style.setProperty("--room-scale", "1");
+
+      const availableWidth = room.clientWidth - 4;
+      const neededWidth = room.scrollWidth;
+      if (availableWidth > 0 && neededWidth > availableWidth) {
+        const scale = Math.max(0.28, Math.min(1, availableWidth / neededWidth));
+        room.style.setProperty("--room-scale", scale.toFixed(3));
+      }
+    });
+  });
+}
+
+function getDateForDay(dayIndex) {
+  const diff = dayIndex - currentDayIndex;
+  const targetDate = new Date(today);
+  targetDate.setDate(today.getDate() + diff);
+  return `${targetDate.getMonth() + 1}/${targetDate.getDate()}`;
+}
+
+function getDayFromDate(month, date) {
+  const targetDate = new Date(2026, month - 1, date);
+  const dayOfWeek = targetDate.getDay();
+  return ["日", "月", "火", "水", "木", "金", "土"][dayOfWeek];
+}
+function normalizeDayName(text) {
+  if (!text) return null;
+  const cleaned = String(text).trim().replace(/[、,，。.\s]/g, "");
+  const map = {
+    "日曜日": "日", "日曜": "日", "日": "日",
+    "月曜日": "月", "月曜": "月", "月": "月",
+    "火曜日": "火", "火曜": "火", "火": "火",
+    "水曜日": "水", "水曜": "水", "水": "水",
+    "木曜日": "木", "木曜": "木", "木": "木",
+    "金曜日": "金", "金曜": "金", "金": "金",
+    "土曜日": "土", "土曜": "土", "土": "土"
+  };
+  if (map[cleaned]) return map[cleaned];
+  const match = cleaned.match(/日|月|火|水|木|金|土/);
+  return match ? match[0] : null;
+}
+
+function extractWeekdayHints(text) {
+  const textWithoutDates = String(text)
+    .replace(/\d+月\d+日/g, " ")
+    .replace(/\d+月/g, " ")
+    .replace(/\d{1,2}:\d{2}/g, " ");
+
+  return [...textWithoutDates.matchAll(/[月火水木金](?:曜日|曜)?/g)]
+    .map(match => normalizeDayName(match[0]))
+    .filter(Boolean);
+}
+
+function parseLessonLine(line) {
+  const lesson = { period: null, subject: null, location: null };
+  const periodMatch = line.match(/(\d+)限/);
+  if (periodMatch) lesson.period = periodMatch[1];
+
+  const locationMatch = line.match(/[（(]\s*(?:場所|教室)\s*[:：]\s*([0-9A-Za-z]+(?:-[0-9A-Za-z]+)*|PC-\d+|研究室\d+)\s*[）)]/);
+  if (locationMatch) lesson.location = locationMatch[1];
+
+  let subjectText = line.replace(/^.*?\d+限\s*[:：]?\s*/, "");
+  if (locationMatch) {
+    subjectText = subjectText.replace(locationMatch[0], "").trim();
+  }
+  subjectText = subjectText
+    .replace(/[（(]\s*(?:場所|教室)\s*[:：]\s*[^）)]+[）)]/g, "")
+    .replace(/[：:]+$/, "")
+    .trim();
+  lesson.subject = subjectText;
+
+  return lesson.period && lesson.subject ? lesson : null;
+}
+
+function parseChangeText(rawText) {
+  const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) return null;
+
+  const firstLine = lines[0];
+  const dateMatch = firstLine.match(/(\d+)月(\d+)日/);
+  const dayNameMatch = firstLine.match(/(?:[（(【\[]\s*(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日曜|月曜|火曜|水曜|木曜|金曜|土曜|日|月|火|水|木|金|土)\s*[、,，。.\s]*[）)\]】])|(?:\d+月\d+日\s*(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日曜|月曜|火曜|水曜|木曜|金曜|土曜|日|月|火|水|木|金|土)[、,，。.\s]*)/);
+  const month = dateMatch ? dateMatch[1] : null;
+  const date = dateMatch ? dateMatch[2] : null;
+  const weekdayHints = extractWeekdayHints(rawText);
+  const rawDayName = dayNameMatch ? (dayNameMatch[1] || dayNameMatch[2]) : null;
+  let day = rawDayName ? normalizeDayName(rawDayName) : null;
+  if (!day && month && date) {
+    day = normalizeDayName(getDayFromDate(month, date));
+  }
+  if (!day && weekdayHints.length > 0) {
+    day = weekdayHints[0];
+  }
+
+  const lessonLines = lines.filter(l => l.match(/\d{1,2}:\d{2}/) && l.match(/\d+限/));
+  if (lessonLines.length > 0) {
+    const lessons = lessonLines.map(parseLessonLine).filter(Boolean).map(item => ({ ...item, day }));
+    if (lessons.length > 0) {
+      return { type: "schedule", month, date, day, lessons };
+    }
+  }
+
+  // 既存の単一行解析ロジック
+  const periodMatch = rawText.match(/(\d+)限/);
+  const status = rawText.includes("削除") ? "削除" : (rawText.includes("休講") ? "休講" : (rawText.includes("補講") ? "補講" : (rawText.includes("振替") ? "振替" : (rawText.includes("変更") ? "変更" : "通常"))));
+  const roomPattern = /(?:[（(]\s*(?:場所|教室)\s*[:：]\s*)?(PC-\d+|研究室\d+|[0-9A-Za-z]+(?:-[0-9A-Za-z]+)+|\d{3,4})\s*(?:教室)?\s*[）)]?/;
+  const roomMatch = rawText.match(roomPattern);
+  let subject = "授業";
+  if (periodMatch) {
+    const afterPeriod = rawText.slice(rawText.indexOf(periodMatch[0]) + periodMatch[0].length);
+    subject = afterPeriod
+      .replace(/を.*$/, "")
+      .replace(/(休講|補講|振替|変更|教室変更|追加|登録|削除).*/, "")
+      .replace(/[（(]\s*(?:場所|教室)\s*[:：]\s*[^）)]+[）)]/g, "")
+      .replace(roomPattern, "")
+      .trim() || "授業";
+  }
+
+  let transferTo = null;
+  if (status === "振替") {
+    const transferMatch = rawText.match(/振替\s+(.+)$/);
+    if (transferMatch) {
+      const target = transferMatch[1].trim();
+      transferTo = days.find(d => target.includes(d)) || days_short.find(d => target.includes(d));
+      if (transferTo && days.includes(transferTo)) {
+        transferTo = days_short[days.indexOf(transferTo)];
+      }
+    }
+    if (!transferTo && weekdayHints.length >= 2) {
+      transferTo = weekdayHints[weekdayHints.length - 1];
+    }
   }
 
   return { type: "single", month, date, day, period: periodMatch ? periodMatch[1] : null, subject, status, transferTo, room: roomMatch ? roomMatch[1] : "" };
@@ -248,3 +498,296 @@ function savePeriods() {
       p.end = `${endHour.value}:${endMinute.value}`;
     }
   });
+  save();
+  renderTimetable();
+  alert("時限設定を保存しました。");
+}
+
+function renderTransferForm() {
+  const sourceDay = document.getElementById("transferSourceDay");
+  const targetDay = document.getElementById("transferTargetDay");
+  const transferLesson = document.getElementById("transferLesson");
+  const status = document.getElementById("transferStatus");
+  const transferButton = document.getElementById("transferButton");
+  if (!sourceDay || !targetDay || !transferLesson || !status || !transferButton) return;
+
+  sourceDay.innerHTML = days_short.map(d => `<option value="${d}">${d}</option>`).join("");
+  targetDay.innerHTML = sourceDay.innerHTML;
+
+  sourceDay.onchange = updateTransferLessonList;
+  transferButton.onclick = transferLessonToDay;
+
+  document.querySelectorAll('input[name="changeMode"]').forEach(el => el.onchange = updateChangeMode);
+  updateChangeMode();
+  updateTransferLessonList();
+}
+
+function updateChangeMode() {
+  const mode = document.querySelector('input[name="changeMode"]:checked')?.value || "edit";
+  const transferFields = document.getElementById("transferFields");
+  const applyButton = document.getElementById("applyChangeButton");
+  const analyzeButton = document.getElementById("analyzeButton");
+  const preview = document.getElementById("changePreview");
+  if (!transferFields || !applyButton || !analyzeButton || !preview) return;
+
+  if (mode === "transfer") {
+    transferFields.style.display = "block";
+    applyButton.style.display = "none";
+    analyzeButton.style.display = "none";
+    preview.style.display = "none";
+  } else {
+    transferFields.style.display = "none";
+    applyButton.style.display = "inline-flex";
+    analyzeButton.style.display = "inline-flex";
+    preview.style.display = "block";
+  }
+}
+
+function updateTransferLessonList() {
+  const sourceDay = document.getElementById("transferSourceDay");
+  const transferLesson = document.getElementById("transferLesson");
+  const status = document.getElementById("transferStatus");
+  const transferButton = document.getElementById("transferButton");
+  if (!sourceDay || !transferLesson || !status || !transferButton) return;
+
+  const day = sourceDay.value;
+  const lessons = state.lessons.filter(l => l.day === day);
+
+  if (lessons.length === 0) {
+    transferLesson.innerHTML = `<option value="">該当授業がありません</option>`;
+    transferButton.disabled = true;
+    status.textContent = `移動元 ${day} に登録された授業がありません。`;
+    return;
+  }
+
+  transferLesson.innerHTML = lessons.map(l => `<option value="${l.id}">${l.name} (${l.day}${l.period}限)</option>`).join("");
+  transferButton.disabled = false;
+  status.textContent = `${lessons.length}件の授業が見つかりました。振替先を選択してください。`;
+}
+
+function transferLessonToDay() {
+  const transferLesson = document.getElementById("transferLesson");
+  const targetDay = document.getElementById("transferTargetDay");
+  if (!transferLesson || !targetDay) return;
+
+  const lessonId = transferLesson.value;
+  const lesson = state.lessons.find(l => l.id === lessonId);
+  if (!lesson) {
+    alert("振替する授業を選択してください。");
+    return;
+  }
+
+  const newDay = targetDay.value;
+  const conflict = state.lessons.some(l => l.id !== lessonId && l.day === newDay && Number(l.period) === Number(lesson.period));
+  if (conflict) {
+    if (!confirm("移動先の同じ時限に他の授業が既にあります。上書きしますか？")) {
+      return;
+    }
+  }
+
+  lesson.day = newDay;
+  save();
+  renderTimetable();
+  renderTransferForm();
+  alert("授業を振替しました。曜日だけで振替されました。");
+}
+
+function editLesson(id) {
+  const lesson = state.lessons.find(l => l.id === id);
+  if (!lesson) return;
+
+  document.getElementById("editLessonId").value = id;
+  document.getElementById("editLessonName").value = lesson.name;
+  document.getElementById("editLessonDay").value = lesson.day;
+  document.getElementById("editLessonPeriod").value = lesson.period;
+  document.getElementById("editLessonRoom").value = lesson.room;
+  document.getElementById("editLessonDialog").showModal();
+}
+
+window.editLesson = editLesson;
+
+window.deleteLesson = (id) => {
+  if (!confirm("この授業を削除しますか？")) return;
+  state.lessons = state.lessons.filter(l => l.id !== id);
+  save();
+  renderTimetable();
+  renderTodayLessons();
+};
+
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function dragLesson(ev, id) {
+  ev.dataTransfer.setData("text", id);
+}
+
+function dropLesson(ev) {
+  ev.preventDefault();
+  const id = ev.dataTransfer.getData("text");
+  const newDay = ev.target.closest('.tt-cell.header').dataset.day;
+  const lesson = state.lessons.find(l => l.id === id);
+  if (lesson && newDay && lesson.day !== newDay) {
+    lesson.day = newDay;
+    save();
+    renderTimetable();
+    renderTodayLessons();
+  }
+}
+
+// --- 変更情報の解析と反映ロジック ---
+
+// 解析ボタンのイベント登録
+const analyzeBtn = document.getElementById("analyzeButton");
+if (analyzeBtn) {
+  analyzeBtn.onclick = () => {
+    const text = document.getElementById("changeText").value;
+    const preview = document.getElementById("changePreview");
+    const parsed = parseChangeText(text);
+    if (!parsed || (!parsed.day && !parsed.month)) {
+      preview.innerHTML = "<p style='color:red;'>形式が正しくありません。「月曜」などの曜日、または「○月○日」を含めてください。</p>";
+      return;
+    }
+
+    if (parsed.type === "schedule") {
+      const lessonHtml = parsed.lessons.map(l => `📌 ${parsed.month}/${parsed.date} (${parsed.day}) ${l.period}限 ${l.subject}${l.location ? `（場所：${l.location}）` : ""}`).join("<br>");
+      preview.innerHTML = `
+        <div style="padding:10px; background:#f0f7f4; border-radius:8px; border:1px solid #9ed8c6;">
+          <strong>解析結果: ${parsed.lessons.length}件の授業</strong><br>
+          ${lessonHtml}
+        </div>
+      `;
+      changeAnalysis = parsed;
+      document.getElementById("applyChangeButton").disabled = false;
+      return;
+    }
+
+    if (parsed.type === "single" && parsed.period) {
+      let resultHtml = `
+        <div style="padding:10px; background:#f0f7f4; border-radius:8px; border:1px solid #9ed8c6;">
+          <strong>解析結果:</strong><br>
+          📅 ${parsed.month && parsed.date ? `${parsed.month}/${parsed.date}` : `${parsed.day}曜`} <br>
+          📌 ${parsed.period}限 <br>
+          📌 科目: ${parsed.subject} <br>
+          📌 状態: ${parsed.status}
+      `;
+      if (parsed.transferTo) {
+        resultHtml += `<br>📌 振替先: ${parsed.transferTo}`;
+      }
+      if (parsed.room) {
+        resultHtml += `<br>📌 教室: ${parsed.room}`;
+      }
+      resultHtml += `</div>`;
+      preview.innerHTML = resultHtml;
+      changeAnalysis = parsed;
+      document.getElementById("applyChangeButton").disabled = false;
+      return;
+    }
+
+    preview.innerHTML = "<p style='color:red;'>形式が正しくありません。「月曜 ○限」または「○月○日 ○限」を含めてください。</p>";
+  };
+}
+
+// 例文ボタンのイベント登録
+const exampleTransferButton = document.getElementById("exampleTransfer");
+if (exampleTransferButton) {
+  exampleTransferButton.onclick = () => {
+    document.getElementById("changeText").value = "月曜2限を金曜に振替";
+  };
+}
+
+const exampleScheduleButton = document.getElementById("exampleSchedule");
+if (exampleScheduleButton) {
+  exampleScheduleButton.onclick = () => {
+    document.getElementById("changeText").value = "月曜2限 英語A 302教室 追加";
+  };
+}
+
+const exampleCancelButton = document.getElementById("exampleCancel");
+if (exampleCancelButton) {
+  exampleCancelButton.onclick = () => {
+    document.getElementById("changeText").value = "月曜2限 英語A 教室変更 302教室";
+  };
+}
+
+const exampleDeleteButton = document.getElementById("exampleDelete");
+if (exampleDeleteButton) {
+  exampleDeleteButton.onclick = () => {
+    document.getElementById("changeText").value = "月曜2限 削除";
+  };
+}
+
+// 反映ボタンの処理（ルール：予定が被っている時は確認する）
+const applyBtn = document.getElementById("applyChangeButton");
+if (applyBtn) {
+  applyBtn.onclick = () => {
+    if (!changeAnalysis.day && !changeAnalysis.month) {
+      alert("解析してください。");
+      return;
+    }
+    const day = changeAnalysis.day || getDayFromDate(changeAnalysis.month, changeAnalysis.date);
+    const periodId = Number(changeAnalysis.period);
+    if (periodId > 4) {
+      alert("5限・6限は使わない設定です。1〜4限を指定してください。");
+      return;
+    }
+
+    if (changeAnalysis.type === "schedule") {
+      changeAnalysis.lessons.filter(lesson => Number(lesson.period) <= 4).forEach(lesson => {
+        state.lessons.push({
+          id: uid(),
+          name: lesson.subject,
+          day: lesson.day || changeAnalysis.day || day,
+          period: lesson.period,
+          room: lesson.location || "",
+          status: "通常"
+        });
+      });
+      alert(`${changeAnalysis.lessons.length}件の授業を追加しました。`);
+    } else if (changeAnalysis.status === "休講") {
+      // 該当lessonを探してstatus = "休講"
+      const lesson = state.lessons.find(l => l.day === day && Number(l.period) === periodId);
+      if (lesson) {
+        lesson.status = "休講";
+      } else {
+        // 授業がない場合、追加して休講
+        state.lessons.push({ id: uid(), name: changeAnalysis.subject || "休講", day: day, period: changeAnalysis.period, room: "", status: "休講" });
+      }
+    } else if (changeAnalysis.status === "補講") {
+      // 追加
+      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "補講", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
+    } else if (changeAnalysis.status === "振替") {
+      // 該当lessonを探してdayを変更
+      const lesson = state.lessons.find(l => l.day === day && Number(l.period) === periodId);
+      if (lesson && changeAnalysis.transferTo) {
+        lesson.day = changeAnalysis.transferTo;
+      } else {
+        alert("振替先が指定されていません。");
+        return;
+      }
+    } else if (changeAnalysis.status === "変更") {
+      const lesson = state.lessons.find(l => l.day === day && Number(l.period) === periodId);
+      if (lesson) {
+        if (changeAnalysis.subject && changeAnalysis.subject !== "授業") lesson.name = changeAnalysis.subject;
+        if (changeAnalysis.room) lesson.room = changeAnalysis.room;
+      } else {
+        state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
+      }
+    } else if (changeAnalysis.status === "削除") {
+      const beforeCount = state.lessons.length;
+      state.lessons = state.lessons.filter(l => !(l.day === day && Number(l.period) === periodId));
+      if (state.lessons.length === beforeCount) {
+        alert("削除する授業が見つかりませんでした。");
+        return;
+      }
+    } else {
+      // 追加
+      state.lessons.push({ id: uid(), name: changeAnalysis.subject || "授業", day: day, period: changeAnalysis.period, room: changeAnalysis.room || "", status: "通常" });
+    }
+
+    alert("スケジュールに反映しました。");
+    renderTimetable();
+    renderTodayLessons();
+    save();
+  };
+}
