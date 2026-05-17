@@ -420,7 +420,7 @@ h1 {
   }
 
   .tt-cell.header {
-    min-height: 100px;
+    min-height: 50px;
     display: grid;
     place-items: center;
     color: #647887;
@@ -531,10 +531,12 @@ h1 {
     left: 8px;
     right: 8px;
     bottom: 7px;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 0;
     min-height: 20px;
-    overflow: visible;
+    overflow: hidden;
     border-radius: 999px;
     padding: 2px 5px;
     color: #647887;
@@ -548,8 +550,15 @@ h1 {
   }
 
   .lesson-room.fit-room-one-line {
-    overflow: visible;
+    overflow: hidden;
     text-overflow: clip;
+  }
+
+  .lesson-room-text {
+    display: block;
+    min-width: max-content;
+    max-width: none;
+    white-space: nowrap;
     transform: scaleX(var(--room-scale, 1));
     transform-origin: center;
   }
