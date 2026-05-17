@@ -514,6 +514,7 @@ h1 {
   .lesson-name {
     display: -webkit-box;
     min-width: 0;
+    width: 100%;
     overflow: hidden;
     color: #24333d;
     font-size: 13px;
@@ -524,6 +525,24 @@ h1 {
     overflow-wrap: anywhere;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+  }
+
+  .lesson-name.fit-name-one-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    -webkit-line-clamp: unset;
+  }
+
+  .lesson-name.fit-name-one-line .lesson-name-text {
+    display: block;
+    min-width: max-content;
+    max-width: none;
+    white-space: nowrap;
+    transform: scaleX(var(--name-scale, 1));
+    transform-origin: center;
   }
 
   .lesson-room {
@@ -579,23 +598,3 @@ h1 {
   .card-title {
     font-size: 12px;
   }
-
-  .card-meta {
-    font-size: 11px;
-  }
-
-  .period-row {
-    grid-template-columns: 54px 1fr 1fr;
-    gap: 8px;
-  }
-
-  dialog {
-    width: calc(100vw - 28px);
-    max-width: 460px;
-  }
-
-  dialog form,
-  .dialog-form {
-    padding: 18px;
-  }
-}
