@@ -420,7 +420,7 @@ h1 {
   }
 
   .tt-cell.header {
-    min-height: 50px;
+    min-height: 100px;
     display: grid;
     place-items: center;
     color: #647887;
