@@ -124,12 +124,30 @@ function getDayFromDate(month, date) {
 }
 function normalizeDayName(text) {
   if (!text) return null;
+  const cleaned = String(text).trim().replace(/[、,，。.\s]/g, "");
   const map = {
-    "日曜日": "日", "月曜日": "月", "火曜日": "火", "水曜日": "水", "木曜日": "木", "金曜日": "金", "土曜日": "土"
+    "日曜日": "日", "日曜": "日", "日": "日",
+    "月曜日": "月", "月曜": "月", "月": "月",
+    "火曜日": "火", "火曜": "火", "火": "火",
+    "水曜日": "水", "水曜": "水", "水": "水",
+    "木曜日": "木", "木曜": "木", "木": "木",
+    "金曜日": "金", "金曜": "金", "金": "金",
+    "土曜日": "土", "土曜": "土", "土": "土"
   };
-  if (map[text]) return map[text];
-  const match = text.match(/日|月|火|水|木|金|土/);
+  if (map[cleaned]) return map[cleaned];
+  const match = cleaned.match(/日|月|火|水|木|金|土/);
   return match ? match[0] : null;
+}
+
+function extractWeekdayHints(text) {
+  const textWithoutDates = String(text)
+    .replace(/\d+月\d+日/g, " ")
+    .replace(/\d+月/g, " ")
+    .replace(/\d{1,2}:\d{2}/g, " ");
+
+  return [...textWithoutDates.matchAll(/[月火水木金](?:曜日|曜)?/g)]
+    .map(match => normalizeDayName(match[0]))
+    .filter(Boolean);
 }
 
 function parseLessonLine(line) {
@@ -159,13 +177,10 @@ function parseChangeText(rawText) {
 
   const firstLine = lines[0];
   const dateMatch = firstLine.match(/(\d+)月(\d+)日/);
-  const dayNameMatch = firstLine.match(/(?:[（(【\[]\s*(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日|月|火|水|木|金|土)\s*[）)\]】])|(?:\d+月\d+日\s*(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日|月|火|水|木|金|土))/);
+  const dayNameMatch = firstLine.match(/(?:[（(【\[]\s*(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日曜|月曜|火曜|水曜|木曜|金曜|土曜|日|月|火|水|木|金|土)\s*[、,，。.\s]*[）)\]】])|(?:\d+月\d+日\s*(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日曜|月曜|火曜|水曜|木曜|金曜|土曜|日|月|火|水|木|金|土)[、,，。.\s]*)/);
   const month = dateMatch ? dateMatch[1] : null;
   const date = dateMatch ? dateMatch[2] : null;
-  const textWithoutDates = rawText.replace(/\d+月\d+日/g, " ");
-  const weekdayHints = [...textWithoutDates.matchAll(/(日曜日|月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日曜|月曜|火曜|水曜|木曜|金曜|土曜|日|月|火|水|木|金|土)/g)]
-    .map(match => normalizeDayName(match[1]))
-    .filter(Boolean);
+  const weekdayHints = extractWeekdayHints(rawText);
   const rawDayName = dayNameMatch ? (dayNameMatch[1] || dayNameMatch[2]) : null;
   let day = rawDayName ? normalizeDayName(rawDayName) : null;
   if (!day && month && date) {
