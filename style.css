@@ -176,6 +176,14 @@ h1 {
   background: #fbfcfc;
 }
 
+.lesson-name.fit-one-line {
+  display: inline-block;
+  max-width: none;
+  white-space: nowrap;
+  transform: scaleX(var(--name-scale, 1));
+  transform-origin: center;
+}
+
 .cancelled {
   opacity: 0.5;
   color: gray;
@@ -512,18 +520,22 @@ h1 {
   }
 
   .lesson-name {
-    display: -webkit-box;
+    display: block;
     min-width: 0;
     overflow: hidden;
     color: #24333d;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 900;
     line-height: 1.25;
     text-align: center;
-    white-space: normal;
+    white-space: nowrap;
     overflow-wrap: anywhere;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    text-overflow: ellipsis;
+  }
+
+  .lesson-name.fit-one-line {
+    overflow: visible;
+    text-overflow: clip;
   }
 
   .lesson-room {
