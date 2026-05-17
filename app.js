@@ -103,7 +103,7 @@ function renderTimetable() {
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
             <div class="lesson-info" style="flex:1; cursor:pointer;" onclick="editLesson('${l.id}')">
               <strong class="lesson-name">${l.name}</strong>
-              ${l.room ? `<span class="lesson-room">${l.room}</span>` : ""}
+              ${l.room ? `<span class="lesson-room"><span class="lesson-room-text">${l.room}</span></span>` : ""}
             </div>
             <button onclick="event.stopPropagation(); deleteLesson('${l.id}');" style="color:#d32f2f; border:none; background:none; font-size:12px; padding:0;">削除</button>
           </div>
@@ -118,17 +118,18 @@ function fitLessonRooms() {
   requestAnimationFrame(() => {
     document.querySelectorAll(".lesson-room").forEach(room => {
       const roomText = room.textContent.trim();
+      const text = room.querySelector(".lesson-room-text") || room;
       const isHyphenRoomCode = /^[^-]+-[^-]+-[^-]+$/.test(roomText);
 
       room.classList.add("fit-room-one-line");
       room.classList.toggle("room-code-one-line", isHyphenRoomCode);
-      room.style.setProperty("--room-scale", "1");
+      text.style.setProperty("--room-scale", "1");
 
-      const availableWidth = room.clientWidth - 4;
-      const neededWidth = room.scrollWidth;
+      const availableWidth = room.clientWidth - 10;
+      const neededWidth = text.scrollWidth;
       if (availableWidth > 0 && neededWidth > availableWidth) {
         const scale = Math.max(0.28, Math.min(1, availableWidth / neededWidth));
-        room.style.setProperty("--room-scale", scale.toFixed(3));
+        text.style.setProperty("--room-scale", scale.toFixed(3));
       }
     });
   });
