@@ -535,16 +535,20 @@ h1 {
     width: 100%;
     overflow: hidden;
     color: #24333d;
-    font-size: 14px;
-    font-weight: 900;
-    line-height: 1.25;
+    font-size: 15px;
+    font-weight: 950;
+    line-height: 1.18;
     text-align: center;
     white-space: pre;
     overflow-wrap: normal;
     word-break: keep-all;
+    text-shadow: 0.2px 0 currentColor;
   }
 
   .lesson-name-text {
+    display: block;
+    width: 100%;
+    text-align: center;
     white-space: pre;
   }
 
@@ -561,6 +565,8 @@ h1 {
     display: block;
     min-width: max-content;
     max-width: none;
+    width: auto;
+    text-align: center;
     white-space: nowrap;
     transform: scaleX(var(--name-scale, 1));
     transform-origin: center;
