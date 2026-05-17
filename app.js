@@ -108,6 +108,27 @@ function renderTimetable() {
     });
   });
   grid.innerHTML = html;
+  fitLessonNames();
+}
+
+function fitLessonNames() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".lesson-name").forEach(name => {
+      const textLength = [...name.textContent.trim()].length;
+      name.classList.toggle("fit-one-line", textLength <= 14);
+      name.style.setProperty("--name-scale", "1");
+
+      if (textLength > 14) return;
+
+      const parent = name.closest(".lesson-info");
+      const availableWidth = parent ? parent.clientWidth - 2 : name.clientWidth;
+      const neededWidth = name.scrollWidth;
+      if (availableWidth > 0 && neededWidth > availableWidth) {
+        const scale = Math.max(0.5, Math.min(1, availableWidth / neededWidth));
+        name.style.setProperty("--name-scale", scale.toFixed(3));
+      }
+    });
+  });
 }
 
 function getDateForDay(dayIndex) {
