@@ -126,7 +126,7 @@ function fitLessonNames() {
     document.querySelectorAll(".lesson-name").forEach(name => {
       const text = name.querySelector(".lesson-name-text") || name;
       const nameText = text.textContent.trim();
-      const shouldFitOneLine = !nameText.includes("\n") && [...nameText].length <= 12;
+      const shouldFitOneLine = !nameText.includes("\n");
 
       name.classList.toggle("fit-name-one-line", shouldFitOneLine);
       text.style.setProperty("--name-scale", "1");
@@ -136,7 +136,7 @@ function fitLessonNames() {
       const availableWidth = name.clientWidth - 4;
       const neededWidth = text.scrollWidth;
       if (availableWidth > 0 && neededWidth > availableWidth) {
-        const scale = Math.max(0.45, Math.min(1, availableWidth / neededWidth));
+        const scale = Math.max(0.28, Math.min(1, availableWidth / neededWidth));
         text.style.setProperty("--name-scale", scale.toFixed(3));
       }
     });
