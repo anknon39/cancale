@@ -114,16 +114,21 @@ function renderTimetable() {
 function fitLessonRooms() {
   requestAnimationFrame(() => {
     document.querySelectorAll(".lesson-room").forEach(room => {
-      const textLength = [...room.textContent.trim()].length;
-      room.classList.toggle("fit-room-one-line", textLength <= 17);
+      const roomText = room.textContent.trim();
+      const textLength = [...roomText].length;
+      const isHyphenRoomCode = /^[^-]+-[^-]+-[^-]+$/.test(roomText);
+      const shouldFitOneLine = isHyphenRoomCode || textLength <= 17;
+
+      room.classList.toggle("fit-room-one-line", shouldFitOneLine);
+      room.classList.toggle("room-code-one-line", isHyphenRoomCode);
       room.style.setProperty("--room-scale", "1");
 
-      if (textLength > 17) return;
+      if (!shouldFitOneLine) return;
 
       const availableWidth = room.clientWidth - 4;
       const neededWidth = room.scrollWidth;
       if (availableWidth > 0 && neededWidth > availableWidth) {
-        const scale = Math.max(0.45, Math.min(1, availableWidth / neededWidth));
+        const scale = Math.max(0.35, Math.min(1, availableWidth / neededWidth));
         room.style.setProperty("--room-scale", scale.toFixed(3));
       }
     });
