@@ -176,14 +176,6 @@ h1 {
   background: #fbfcfc;
 }
 
-.lesson-name.fit-one-line {
-  display: inline-block;
-  max-width: none;
-  white-space: nowrap;
-  transform: scaleX(var(--name-scale, 1));
-  transform-origin: center;
-}
-
 .cancelled {
   opacity: 0.5;
   color: gray;
@@ -520,22 +512,18 @@ h1 {
   }
 
   .lesson-name {
-    display: block;
+    display: -webkit-box;
     min-width: 0;
     overflow: hidden;
     color: #24333d;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 900;
     line-height: 1.25;
     text-align: center;
-    white-space: nowrap;
+    white-space: normal;
     overflow-wrap: anywhere;
-    text-overflow: ellipsis;
-  }
-
-  .lesson-name.fit-one-line {
-    overflow: visible;
-    text-overflow: clip;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .lesson-room {
@@ -557,6 +545,13 @@ h1 {
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .lesson-room.fit-room-one-line {
+    overflow: visible;
+    text-overflow: clip;
+    transform: scaleX(var(--room-scale, 1));
+    transform-origin: center;
   }
 
   .lesson-card button {
