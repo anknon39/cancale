@@ -528,16 +528,18 @@ h1 {
 
   .lesson-room {
     position: absolute;
-    left: 8px;
-    right: 8px;
-    bottom: 7px;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
     min-width: 0;
-    min-height: 20px;
+    height: 22px;
+    max-width: 100%;
     overflow: hidden;
-    border-radius: 999px;
+    border-radius: 0 0 12px 12px;
     padding: 2px 5px;
     color: #647887;
     background: #ffffff;
@@ -558,6 +560,7 @@ h1 {
     display: block;
     min-width: max-content;
     max-width: none;
+    overflow: visible;
     white-space: nowrap;
     transform: scaleX(var(--room-scale, 1));
     transform-origin: center;
